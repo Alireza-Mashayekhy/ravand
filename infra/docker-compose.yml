@@ -1,0 +1,27 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ravand-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: ravand
+      MYSQL_USER: ravand
+      MYSQL_PASSWORD: ravand_dev_password
+      MYSQL_ROOT_PASSWORD: ravand_root_password
+
+    ports:
+      - '3307:3306'
+
+    volumes:
+      - ravand_mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$$MYSQL_ROOT_PASSWORD']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ravand_mysql_data:
