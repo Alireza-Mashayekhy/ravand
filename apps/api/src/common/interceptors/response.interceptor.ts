@@ -1,29 +1,34 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import type { ApiResponse } from '@ravand/contracts';
+import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
-import type { PaginationMeta } from '../query/pagination.meta';
-import type { ApiResponse } from '../types/api-response';
 
 interface ResponsePayload<T> {
   data: T;
   message?: string;
-  meta?: PaginationMeta;
+  meta?: ApiResponse<T>['meta'];
 }
 
-function isResponsePayload<T>(value: unknown): value is ResponsePayload<T> {
+function hasDataProperty<T>(value: unknown): value is ResponsePayload<T> {
   return value !== null && typeof value === 'object' && 'data' in value;
 }
 
+/**
+ * همهٔ پاسخ‌های موفق را در یک envelope واحد می‌پیچد.
+ * اگر کنترلر `{ data, meta }` برگرداند (مثل لیست‌های صفحه‌بندی‌شده)،
+ * همان ساختار استفاده می‌شود؛ در غیر این صورت مقدار برگشتی داخل data می‌رود.
+ */
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
   intercept(_context: ExecutionContext, next: CallHandler<T>): Observable<ApiResponse<T>> {
     return next.handle().pipe(
       map((response: T) => {
-        if (isResponsePayload<T>(response)) {
+        if (hasDataProperty<T>(response)) {
           return {
             success: true,
-            ...response,
+            data: response.data,
+            ...(response.message ? { message: response.message } : {}),
+            ...(response.meta ? { meta: response.meta } : {}),
           };
         }
 

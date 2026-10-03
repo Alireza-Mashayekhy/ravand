@@ -1,32 +1,43 @@
-import path from 'node:path';
-
-import { config } from 'dotenv';
+import { config as loadDotenv } from 'dotenv';
+import type { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
 
-import { buildDatabaseConfig } from '../config/database.config';
+import { getEnvFilePath, loadEnv } from '../config/env';
+import { entities, migrations, MIGRATIONS_TABLE } from './typeorm-options';
 
-config({
-  path: path.resolve(__dirname, '../../../../.env'),
-});
+/**
+ * DataSource مخصوص CLI (مایگریشن‌ها، سیدرها).
+ *
+ * این فایل مستقل از Nest اجرا می‌شود، اما دقیقاً از همان اسکیمای env
+ * و همان مسیرهای entity/migration استفاده می‌کند تا هیچ‌وقت با اپ
+ * ناهماهنگ نشود.
+ */
 
-const database = buildDatabaseConfig();
+const envFilePath = getEnvFilePath();
 
-export default new DataSource({
+if (envFilePath) {
+  loadDotenv({ path: envFilePath });
+}
+
+const env = loadEnv();
+
+const options: DataSourceOptions = {
   type: 'mysql',
 
-  host: database.host,
-  port: database.port,
-  username: database.username,
-  password: database.password,
-  database: database.name,
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  username: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
 
-  entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
-
-  migrations: [__dirname + '/migrations/*{.ts,.js}'],
+  entities,
+  migrations,
+  migrationsTableName: MIGRATIONS_TABLE,
 
   synchronize: false,
+  timezone: 'Z',
 
-  logging: process.env.NODE_ENV === 'development',
+  logging: env.NODE_ENV === 'development' ? ['error', 'warn', 'migration'] : ['error', 'migration'],
+};
 
-  migrationsTableName: 'typeorm_migrations',
-});
+export default new DataSource(options);

@@ -24,12 +24,18 @@ export default [
       'unused-imports': unusedImports,
     },
 
+    linterOptions: {
+      reportUnusedDisableDirectives: 'warn',
+    },
+
     rules: {
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
 
       'unused-imports/no-unused-imports': 'error',
 
+      eqeqeq: ['error', 'smart'],
+      'no-console': 'off',
       'no-unused-vars': 'off',
     },
   },

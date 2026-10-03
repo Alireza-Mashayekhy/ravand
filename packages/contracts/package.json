@@ -1,0 +1,28 @@
+{
+  "name": "@ravand/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared types, enums and helpers between the API and the web app",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node ../../scripts/clean.mjs dist .turbo tsconfig.tsbuildinfo",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@ravand/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

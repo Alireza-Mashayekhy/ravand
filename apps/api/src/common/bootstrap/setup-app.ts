@@ -1,62 +1,67 @@
 import type { INestApplication } from '@nestjs/common';
 import { BadRequestException, ValidationPipe, VersioningType } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import express from 'express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 
+import type { Env } from '../../config/env';
+import { resolveLogLevels } from '../../config/log-levels';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 import { LoggingInterceptor } from '../interceptors/logging.interceptor';
-import { RequestIdInterceptor } from '../interceptors/request-id.interceptor';
 import { ResponseInterceptor } from '../interceptors/response.interceptor';
+import { MESSAGES } from '../messages/messages';
+import { requestIdMiddleware } from '../middleware/request-id.middleware';
 import { formatValidationErrors } from '../validation/validation-error';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-export function setupApp(app: INestApplication, configService: ConfigService): void {
-  const webUrl = configService.getOrThrow<string>('app.webUrl');
+const API_PREFIX = 'api';
+const API_VERSION = '1';
+const BODY_LIMIT = '1mb';
 
-  const logLevels = configService.getOrThrow('logging.levels');
+/**
+ * پیکربندی مشترک اپ (هم برای main.ts و هم برای تست‌های e2e آینده).
+ *
+ * ترتیب میدلورها مهم است:
+ *   ۱) requestId  → همهٔ پاسخ‌ها (حتی ۴۰۴ و خطای parse) شناسه دارند
+ *   ۲) body parser → با بدنهٔ اصلی Nest جایگزین شده (bodyParser: false در main.ts)
+ */
+export function setupApp(app: INestApplication, env: Env): void {
+  app.enableShutdownHooks();
 
   app.useSecurityHeaders();
 
-  app.enableShutdownHooks();
-
   app.enableCors({
-    origin: webUrl,
+    origin: env.CORS_ORIGINS,
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   });
 
-  app.use(
-    express.json({
-      limit: '1mb',
-    }),
-  );
+  app.use(requestIdMiddleware);
+
+  app.use(json({ limit: BODY_LIMIT }));
 
   app.use(
-    express.urlencoded({
+    urlencoded({
       extended: true,
-      limit: '1mb',
+      limit: BODY_LIMIT,
       parameterLimit: 1000,
     }),
   );
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix(API_PREFIX);
 
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
+    defaultVersion: API_VERSION,
   });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Ravand API')
-    .setDescription('Ravand API documentation')
+    .setDescription('مستندات API راوند')
     .setVersion('1.0')
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig);
-
-  SwaggerModule.setup('docs', app, documentFactory, {
-    useGlobalPrefix: true,
-  });
+  SwaggerModule.setup(`${API_PREFIX}/docs`, app, () =>
+    SwaggerModule.createDocument(app, swaggerConfig),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -64,23 +69,18 @@ export function setupApp(app: INestApplication, configService: ConfigService): v
       forbidNonWhitelisted: true,
       transform: true,
 
-      exceptionFactory: (errors) => {
-        return new BadRequestException({
+      exceptionFactory: (errors) =>
+        new BadRequestException({
           code: 'VALIDATION_ERROR',
-          message: 'اطلاعات واردشده معتبر نیست',
+          message: MESSAGES.validationFailed,
           details: formatValidationErrors(errors),
-        });
-      },
+        }),
     }),
   );
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  app.useGlobalInterceptors(
-    new RequestIdInterceptor(),
-    new LoggingInterceptor(),
-    new ResponseInterceptor(),
-  );
+  app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseInterceptor());
 
-  app.useLogger(logLevels);
+  app.useLogger(resolveLogLevels(env));
 }

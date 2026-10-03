@@ -1,43 +1,57 @@
+# syntax=docker/dockerfile:1
+# ════════════════════════════════════════════════════════════════════
+#  Web (Next.js) — خروجی standalone
+#
+#  Next فقط فایل‌هایی که واقعاً استفاده می‌شوند را trace می‌کند، پس
+#  ایمیج نهایی (~۴۰MB محتوا) به node_modules کامل نیازی ندارد.
+# ════════════════════════════════════════════════════════════════════
+
 FROM node:22-alpine AS base
 
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PNPM_HOME=/pnpm \
+    PATH=/pnpm:$PATH \
+    HUSKY=0 \
+    CI=1 \
+    NEXT_TELEMETRY_DISABLED=1
 
-RUN corepack enable
-
-WORKDIR /app
-
-
-FROM base AS dependencies
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/web/package.json apps/web/package.json
-COPY packages packages
-
-RUN pnpm install --frozen-lockfile --prod=false
-
-FROM dependencies AS build
-
-ARG NEXT_PUBLIC_API_URL
-
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
-COPY apps/web apps/web
-
-RUN pnpm --filter web build
-
-FROM base AS production
-
-ENV NODE_ENV=production
+RUN npm install --global pnpm@10.29.3
 
 WORKDIR /app
 
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=build /app/apps/web/.next ./apps/web/.next
-COPY --from=build /app/apps/web/public ./apps/web/public
-COPY --from=build /app/apps/web/package.json ./apps/web/package.json
 
-WORKDIR /app/apps/web
+# ──────────────────────────── نصب و بیلد ────────────────────────────
+FROM base AS build
 
-CMD ["pnpm", "start"]
+COPY . .
+
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
+# آدرس API برای rewrite پروکسی؛ در زمان build داخل خروجی Next نوشته می‌شود،
+# پس باید دقیقاً با مقدار runtime یکی باشد.
+ARG API_URL=http://localhost:4444
+ENV API_URL=$API_URL
+
+RUN pnpm --filter @ravand/web... build
+
+
+# ────────────────────────────── اجرا ──────────────────────────────
+FROM node:22-alpine AS runtime
+
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0 \
+    NEXT_TELEMETRY_DISABLED=1
+
+WORKDIR /app
+
+# خروجی standalone ساختار مسیر ریپو را حفظ می‌کند: apps/web/server.js
+COPY --from=build --chown=node:node /app/apps/web/.next/standalone ./
+COPY --from=build --chown=node:node /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=build --chown=node:node /app/apps/web/public ./apps/web/public
+
+USER node
+
+EXPOSE 3000
+
+CMD ["node", "apps/web/server.js"]
