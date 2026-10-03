@@ -1,48 +1,41 @@
-# Dependencies
+# ── وابستگی‌ها ─────────────────────────────────────────────
 node_modules/
 .pnpm-store/
 
-# Next.js
+# ── خروجی بیلد ─────────────────────────────────────────────
 .next/
 out/
-
-# Build / Coverage
 dist/
 build/
 coverage/
+*.tsbuildinfo
+next-env.d.ts
 
-# Turbo
+# ── توربو ──────────────────────────────────────────────────
 .turbo/
 
-# TypeScript
-*.tsbuildinfo
-
-# Environment
+# ── محیط ───────────────────────────────────────────────────
 .env
 .env.*
 !.env.example
+!.env.*.example
 
-# Logs
+# ── لاگ‌ها ─────────────────────────────────────────────────
 *.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 
-# OS
+# ── سیستم‌عامل ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# IDE
+# ── ادیتور ─────────────────────────────────────────────────
 .idea/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# Local data
+# ── داده‌های محلی ──────────────────────────────────────────
 docker-data/
 backups/
-
-# Next.js
-.next/
-out/
-next-env.d.ts

@@ -1,27 +1,25 @@
-import { DataSource } from 'typeorm';
+import type { DataSource } from 'typeorm';
 
 import dataSource from '../data-source';
-import type { Seeder } from './index';
+import { seeders } from './index';
 
-const seeders: Seeder[] = [];
+async function run(): Promise<void> {
+  const startedAt = Date.now();
 
-async function run() {
   let connection: DataSource | undefined;
 
   try {
     connection = await dataSource.initialize();
 
     for (const seeder of seeders) {
-      console.log(`Running seeder: ${seeder.name}`);
+      console.log(`▶ سیدر: ${seeder.name}`);
 
-      await seeder.run();
-
-      console.log(`Completed seeder: ${seeder.name}`);
+      await seeder.run(connection);
     }
 
-    console.log('Database seeding completed.');
+    console.log(`✔ همهٔ سیدرها در ${Date.now() - startedAt}ms اجرا شدند.`);
   } catch (error) {
-    console.error('Database seeding failed:', error);
+    console.error('✖ اجرای سیدرها شکست خورد:', error);
 
     process.exitCode = 1;
   } finally {

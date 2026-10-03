@@ -1,20 +1,43 @@
+# ════════════════════════════════════════════════════════════════════
+#  Ravand — استک محلی
+#
+#  پیش‌فرض (فقط دیتابیس):
+#     pnpm db:up        →  docker compose -f infra/docker-compose.yml up -d
+#
+#  کل استک (mysql + api + web):
+#     pnpm stack:up     →  docker compose -f infra/docker-compose.yml --profile full up -d --build
+#
+#  سرویس‌های api و web داخل پروفایل «full» هستند تا dev لوکال فقط به
+#  یک دیتابیس نیاز داشته باشد و مجبور نباشی هر بار کل استک را build کنی.
+# ════════════════════════════════════════════════════════════════════
+
+name: ravand
+
 services:
   mysql:
     image: mysql:8.4
     container_name: ravand-mysql
     restart: unless-stopped
 
+    # یکسان‌سازی charset و timezone با تنظیمات TypeORM (timezone: 'Z')
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+00:00
+
     environment:
       MYSQL_DATABASE: ravand
       MYSQL_USER: ravand
+      # برای دموی محلی؛ در استقرار واقعی از secret manager استفاده کن
       MYSQL_PASSWORD: ravand_dev_password
       MYSQL_ROOT_PASSWORD: ravand_root_password
 
     ports:
+      # پورت میزبان 3307 است تا با MySQL نصب‌شدهٔ روی سیستم تضاد نداشته باشد
       - '3307:3306'
 
     volumes:
-      - ravand_mysql_data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
 
     healthcheck:
       test:
@@ -25,6 +48,7 @@ services:
       start_period: 10s
 
   api:
+    profiles: ['full']
     build:
       context: ..
       dockerfile: infra/docker/api/Dockerfile
@@ -34,9 +58,10 @@ services:
 
     environment:
       NODE_ENV: production
-
       API_PORT: 3001
-      WEB_URL: http://localhost:3333
+      CORS_ORIGINS: http://localhost:3333
+      # مایگریشن‌ها هنگام بالا آمدن اجرا می‌شوند (در dev دستی اجرا می‌کنیم)
+      RUN_MIGRATIONS: 'true'
 
       DB_HOST: mysql
       DB_PORT: 3306
@@ -56,20 +81,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 30s
 
   web:
+    profiles: ['full']
     build:
       context: ..
       dockerfile: infra/docker/web/Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:4444/api/v1
+        # API_URL در زمان build داخل rewrite پروکسی Next نوشته می‌شود،
+        # پس باید دقیقاً همان مقدار runtime باشد.
+        API_URL: http://api:3001
 
     container_name: ravand-web
     restart: unless-stopped
 
     environment:
       NODE_ENV: production
+      # SSR و rewrite از داخل شبکهٔ داکر به سرویس api وصل می‌شوند
+      API_URL: http://api:3001
 
     ports:
       - '3333:3000'
@@ -79,4 +109,4 @@ services:
         condition: service_healthy
 
 volumes:
-  ravand_mysql_data:
+  mysql-data:

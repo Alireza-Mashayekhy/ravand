@@ -1,0 +1,28 @@
+# این فایل تعیین می‌کند چه چیزی به بیلد داکر فرستاده نشود.
+# هدف: کانتکست کوچک + نفوذ نکردن فایل‌های محلی و اسرار به ایمیج.
+
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/out
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+.git
+.github
+.husky
+.vscode
+.idea
+.DS_Store
+*.log
+
+.env
+.env.*
+!.env.example
+
+docker-data
+backups
+docs
+README.md

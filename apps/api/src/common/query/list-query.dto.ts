@@ -1,8 +1,16 @@
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import type { SortOrder } from '@ravand/contracts';
+import { SORT_ORDERS, SortOrder as SortOrderValues } from '@ravand/contracts';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 
 import { PaginationQueryDto } from './pagination-query.dto';
-import { SortOrder } from './sort-order';
 
+/**
+ * پیش‌فرض امن برای لیست‌ها: جست‌وجو + ترتیب + صفحه‌بندی.
+ *
+ * نکتهٔ مهم: `sortBy` عمداً اینجا تعریف نشده است.
+ * هر feature باید خودش با `@IsIn(...)` یک allowlist اعلام کند تا هیچ‌وقت
+ * مقدار دلخواه کاربر به ORDER BY نرسد.
+ */
 export class ListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
@@ -10,11 +18,6 @@ export class ListQueryDto extends PaginationQueryDto {
   search?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  sortBy?: string;
-
-  @IsOptional()
-  @IsEnum(SortOrder)
-  sortOrder: SortOrder = SortOrder.DESC;
+  @IsIn(SORT_ORDERS)
+  sortOrder: SortOrder = SortOrderValues.DESC;
 }

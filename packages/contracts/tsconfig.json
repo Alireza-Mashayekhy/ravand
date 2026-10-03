@@ -1,0 +1,12 @@
+{
+  "extends": "@ravand/tsconfig/base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["es2022"],
+    "types": [],
+    "noEmit": true,
+    "declaration": true
+  },
+  "include": ["src"]
+}
