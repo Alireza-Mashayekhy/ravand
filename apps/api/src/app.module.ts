@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import appConfig from './config/app.config';
+import databaseConfig, { DatabaseConfig } from './config/database.config';
 import { envValidationSchema } from './config/env.validation';
-import { typeOrmConfig } from './database/typeorm.config';
+import loggingConfig from './config/logging.config';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -11,10 +13,32 @@ import { HealthModule } from './health/health.module';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
+      envFilePath: '../../.env',
       validationSchema: envValidationSchema,
+      load: [appConfig, databaseConfig, loggingConfig],
     }),
 
-    TypeOrmModule.forRoot(typeOrmConfig),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+
+      useFactory: (configService: ConfigService) => {
+        const database = configService.getOrThrow<DatabaseConfig>('database');
+
+        return {
+          type: 'mysql' as const,
+
+          host: database.host,
+          port: database.port,
+          username: database.username,
+          password: database.password,
+          database: database.name,
+
+          autoLoadEntities: true,
+          synchronize: false,
+          migrationsRun: false,
+        };
+      },
+    }),
 
     HealthModule,
   ],

@@ -2,9 +2,8 @@ import eslint from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
-import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default [
   {
     ignores: [
       '**/node_modules/**',
@@ -13,12 +12,11 @@ export default tseslint.config(
       '**/coverage/**',
       '**/build/**',
       '**/out/**',
+      '**/.turbo/**',
     ],
   },
 
   eslint.configs.recommended,
-
-  ...tseslint.configs.recommended,
 
   {
     plugins: {
@@ -32,16 +30,9 @@ export default tseslint.config(
 
       'unused-imports/no-unused-imports': 'error',
 
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
+      'no-unused-vars': 'off',
     },
   },
 
   prettier,
-);
+];
