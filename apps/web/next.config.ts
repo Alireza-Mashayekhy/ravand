@@ -23,6 +23,9 @@ const apiUrl = (process.env.API_URL ?? 'http://localhost:4444').replace(/\/+$/, 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // اجازهٔ HMR/منابع dev از دامنهٔ پیش‌نمایش Arena (فقط در حالت توسعه)
+  allowedDevOrigins: ['*.e2b.app', '3333-iqdlw3j4ptyd2lp9gh4pk.e2b.app'],
+
   // خروجی مستقل برای ایمیج کوچک داکر (.next/standalone)
   output: 'standalone',
   outputFileTracingRoot: repoRoot,
