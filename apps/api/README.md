@@ -1,6 +1,6 @@
 # @ravand/api
 
-API راوند بر پایهٔ NestJS + TypeORM + MySQL.
+API روند بر پایهٔ NestJS + TypeORM + MySQL.
 
 > سند راه‌اندازی کامل و توضیح معماری در [`README.md` ریشه](../../README.md) است.
 > این فایل فقط جزئیات مخصوص API را دارد.

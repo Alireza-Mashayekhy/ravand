@@ -3,7 +3,6 @@
 import {
   Bell,
   CalendarDays,
-  ChevronDown,
   CircleHelp,
   Clock3,
   FileText,
@@ -89,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       <aside
-        className="hidden w-[248px] shrink-0 flex-col border-l border-[#1c5630] bg-sidebar lg:flex"
+        className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col overflow-y-auto border-l border-[#1c5630] bg-sidebar lg:flex"
         aria-label="ناوبری اصلی"
       >
         <SidebarContent />
@@ -136,13 +135,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Menu className="size-5" />
             </button>
             <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-              <span>فضای کاری شخصی</span>
-              <ChevronDown className="size-3.5" />
+              <span>فضای شخصی</span>
             </div>
             <div className="h-4 w-px bg-border" />
-            <span className="text-sm font-semibold lg:hidden">
-              {isToday ? 'امروز من' : 'راوند'}
-            </span>
+            <span className="text-sm font-semibold lg:hidden">{isToday ? 'امروز من' : 'روند'}</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <button
@@ -150,7 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               aria-label="جستجو"
             >
               <Search className="size-4" />
-              <span className="hidden sm:inline">جستجو در راوند...</span>
+              <span className="hidden sm:inline">جستجو در روند...</span>
               <kbd className="mr-auto hidden rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 ⌘ K
               </kbd>
@@ -163,16 +159,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[#22c55e]" />
             </button>
             <ThemeToggle />
-            <div className="mx-1 h-6 w-px bg-border" />
-            <button
-              className="flex items-center gap-2 rounded-lg p-1 text-right hover:bg-muted"
-              aria-label="منوی پروفایل"
-            >
-              <span className="hidden text-xs font-medium sm:block">علی رضایی</span>
-              <span className="grid size-8 place-items-center rounded-full bg-[#dcfce7] text-xs font-bold text-[#14532d]">
-                ع‍ر
-              </span>
-            </button>
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1540px] flex-1 px-4 py-6 sm:px-7 lg:px-10 lg:py-8">
@@ -206,7 +192,7 @@ function Brand() {
         ر
       </span>
       <span className="text-xl font-extrabold tracking-tight text-white">
-        راوند<span className="text-[#4ade80]">.</span>
+        روند<span className="text-[#4ade80]">.</span>
       </span>
     </Link>
   );
@@ -218,16 +204,11 @@ function SidebarContent() {
         <Brand />
       </div>
       <div className="px-3">
-        <button className="mb-5 flex w-full items-center gap-3 rounded-lg border border-emerald-100/15 bg-white/5 p-2.5 text-right text-xs text-emerald-100/80 hover:bg-white/10">
-          <span className="grid size-7 place-items-center rounded-md bg-[#14532d] text-[11px] font-bold text-white">
-            ع‍ر
+        <div className="mb-5 rounded-lg border border-emerald-100/10 bg-white/5 px-3 py-2.5 text-xs text-emerald-100/70">
+          <span className="flex items-center gap-2">
+            <span className="size-1.5 rounded-full bg-[#22c55e]" /> فضای شخصی
           </span>
-          <span className="flex-1">
-            <b className="block text-white">فضای شخصی علی</b>
-            <small className="text-emerald-200/50">Personal workspace</small>
-          </span>
-          <ChevronDown className="size-3.5" />
-        </button>
+        </div>
         <SidebarNav />
       </div>
       <div className="mt-auto border-t border-emerald-100/10 p-3">
@@ -252,7 +233,7 @@ function SidebarContent() {
 }
 function SidebarNav({ onClick }: { onClick?: () => void }) {
   return (
-    <nav className="space-y-0.5" aria-label="بخش‌های راوند">
+    <nav className="space-y-0.5" aria-label="بخش‌های روند">
       {PRIMARY_NAV.map((item) => (
         <NavLink key={item.href} item={item} onClick={onClick} />
       ))}

@@ -6,6 +6,7 @@ import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
 import { Toaster } from 'sonner';
 
+import { TaskProvider } from '@/features/tasks/store';
 import { createQueryClient } from '@/lib/api/query-client';
 
 interface ProvidersProps {
@@ -19,7 +20,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <TaskProvider>{children}</TaskProvider>
 
         <Toaster position="top-center" dir="rtl" richColors closeButton />
 

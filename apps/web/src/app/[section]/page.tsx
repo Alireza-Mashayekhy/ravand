@@ -29,7 +29,7 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
         </div>
         <h1 className="text-xl font-bold">{label}</h1>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          این بخش در نقشه راه راوند قرار دارد. فعلاً از داشبورد امروز برای مدیریت تمرکز و کارهایت
+          این بخش در نقشه راه روند قرار دارد. فعلاً از داشبورد امروز برای مدیریت تمرکز و کارهایت
           استفاده کن.
         </p>
         <Link

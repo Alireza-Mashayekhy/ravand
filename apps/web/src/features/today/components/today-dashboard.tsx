@@ -20,10 +20,11 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTaskStore } from '@/features/tasks/store';
+import type { Priority, Task } from '@/features/tasks/types';
 import { cn } from '@/lib/utils';
 
-import { calendarItems, overdueTasks, todayTasks } from '../mocks';
-import type { Priority, TodayTask } from '../types';
+import { calendarItems } from '../mocks';
 
 const priorityLabels: Record<Priority, string> = {
   urgent: 'فوری',
@@ -39,14 +40,12 @@ const priorityStyles: Record<Priority, string> = {
 };
 
 export function TodayDashboard() {
-  const [tasks, setTasks] = useState(todayTasks);
+  const { tasks: allTasks, toggleTask } = useTaskStore();
+  const tasks = allTasks.filter((task) => task.today);
+  const overdueTasks = allTasks.filter((task) => task.overdue);
   const [quickAdd, setQuickAdd] = useState('');
-  const completed = tasks.filter((task) => task.completed).length;
+  const completed = tasks.filter((task) => task.status === 'done').length;
   const progress = Math.round((completed / tasks.length) * 100);
-  const toggleTask = (id: string) =>
-    setTasks((current) =>
-      current.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)),
-    );
   return (
     <div className="space-y-6">
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -189,7 +188,7 @@ export function TodayDashboard() {
               </button>
             </div>
           </section>
-          <Overdue />
+          <Overdue tasks={overdueTasks} />
         </div>
         <div className="space-y-6">
           <Calendar />
@@ -201,33 +200,33 @@ export function TodayDashboard() {
   );
 }
 
-function TaskRow({ task, onToggle }: { task: TodayTask; onToggle: (id: string) => void }) {
+function TaskRow({ task, onToggle }: { task: Task; onToggle: (id: string) => void }) {
   return (
     <div
       className={cn(
         'group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40',
-        task.completed && 'bg-muted/20',
+        task.status === 'done' && 'bg-muted/20',
       )}
     >
       <button
         onClick={() => onToggle(task.id)}
         className={cn(
           'grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors',
-          task.completed
+          task.status === 'done'
             ? 'border-[#22c55e] bg-[#22c55e] text-white'
             : task.status === 'in-progress'
               ? 'border-[#22c55e]'
               : 'border-input hover:border-[#22c55e]',
         )}
-        aria-label={task.completed ? `بازگرداندن ${task.title}` : `انجام شد: ${task.title}`}
+        aria-label={task.status === 'done' ? `بازگرداندن ${task.title}` : `انجام شد: ${task.title}`}
       >
-        {task.completed && <Check className="size-3.5" />}
+        {task.status === 'done' && <Check className="size-3.5" />}
       </button>
       <div className="min-w-0 flex-1">
         <p
           className={cn(
             'truncate text-sm font-medium',
-            task.completed && 'text-muted-foreground line-through',
+            task.status === 'done' && 'text-muted-foreground line-through',
           )}
         >
           {task.title}
@@ -235,7 +234,7 @@ function TaskRow({ task, onToggle }: { task: TodayTask; onToggle: (id: string) =
         <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
           <span>{task.project}</span>
           <span className="text-border">•</span>
-          <span className="rounded bg-muted px-1.5 py-0.5">{task.tag}</span>
+          <span className="rounded bg-muted px-1.5 py-0.5">{task.tags[0]}</span>
         </div>
       </div>
       <span
@@ -248,7 +247,7 @@ function TaskRow({ task, onToggle }: { task: TodayTask; onToggle: (id: string) =
       </span>
       <span className="hidden items-center gap-1 text-[11px] text-muted-foreground md:flex">
         <Clock3 className="size-3" />
-        {task.deadline}
+        {task.dueDate}
       </span>
       <button
         className="rounded p-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted"
@@ -260,7 +259,7 @@ function TaskRow({ task, onToggle }: { task: TodayTask; onToggle: (id: string) =
   );
 }
 
-function Overdue() {
+function Overdue({ tasks }: { tasks: Task[] }) {
   return (
     <section
       className="bg-card overflow-hidden rounded-xl border border-red-200/80 dark:border-red-900/50"
@@ -281,7 +280,7 @@ function Overdue() {
         </span>
       </div>
       <div className="divide-y">
-        {overdueTasks.map((task) => (
+        {tasks.map((task) => (
           <div key={task.id} className="flex items-center gap-3 px-4 py-3">
             <Circle className="size-4 shrink-0 text-red-400" />
             <div className="min-w-0 flex-1">
@@ -289,7 +288,7 @@ function Overdue() {
               <p className="mt-1 text-[11px] text-muted-foreground">{task.project}</p>
             </div>
             <span className="rounded bg-orange-50 px-2 py-1 text-[10px] font-medium text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-              {task.deadline}
+              {task.dueDate}
             </span>
           </div>
         ))}

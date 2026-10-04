@@ -20,7 +20,7 @@ export function AppHeader() {
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-sm font-semibold">
-            راوند
+            روند
           </Link>
 
           <nav className="flex items-center gap-1">

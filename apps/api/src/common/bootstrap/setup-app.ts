@@ -55,7 +55,7 @@ export function setupApp(app: INestApplication, env: Env): void {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Ravand API')
-    .setDescription('مستندات API راوند')
+    .setDescription('مستندات API روند')
     .setVersion('1.0')
     .build();
 

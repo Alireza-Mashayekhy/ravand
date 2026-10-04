@@ -16,9 +16,9 @@ const vazirmatn = localFont({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'راوند', template: '%s | راوند' },
+  title: { default: 'روند', template: '%s | روند' },
   description: 'فضای کاری شخصی برای تمرکز و پیشرفت هر روزه',
-  applicationName: 'راوند',
+  applicationName: 'روند',
   robots: { index: false, follow: false },
 };
 
