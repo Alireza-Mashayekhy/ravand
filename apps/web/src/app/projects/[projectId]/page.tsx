@@ -16,12 +16,13 @@ import Link from 'next/link';
 import { use } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { projects } from '@/features/tasks/mocks';
+import { useProjects } from '@/features/projects/store';
 import { STATUS_LABELS, useTaskStore } from '@/features/tasks/store';
 import { cn } from '@/lib/utils';
 
 export default function ProjectDetailRoute({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
+  const { projects } = useProjects();
   const project = projects.find((item) => item.id === projectId) ?? projects[0]!;
   const { tasks } = useTaskStore();
   const projectTasks = tasks.filter((task) => task.projectId === project.id);

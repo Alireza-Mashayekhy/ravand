@@ -16,10 +16,11 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useInbox } from '@/features/inbox/store';
 import { useTaskStore } from '@/features/tasks/store';
 import type { Priority, Task } from '@/features/tasks/types';
 import { cn } from '@/lib/utils';
@@ -41,9 +42,17 @@ const priorityStyles: Record<Priority, string> = {
 
 export function TodayDashboard() {
   const { tasks: allTasks, toggleTask } = useTaskStore();
+  const { capture } = useInbox();
   const tasks = allTasks.filter((task) => task.today);
   const overdueTasks = allTasks.filter((task) => task.overdue);
   const [quickAdd, setQuickAdd] = useState('');
+  const submitQuickAdd = (event: FormEvent) => {
+    event.preventDefault();
+    const title = quickAdd.trim();
+    if (!title) return;
+    capture(title);
+    setQuickAdd('');
+  };
   const completed = tasks.filter((task) => task.status === 'done').length;
   const progress = Math.round((completed / tasks.length) * 100);
   return (
@@ -137,7 +146,7 @@ export function TodayDashboard() {
             Q
           </kbd>
         </div>
-        <div className="flex gap-2 p-3">
+        <form onSubmit={submitQuickAdd} className="flex gap-2 p-3">
           <Input
             value={quickAdd}
             onChange={(e) => setQuickAdd(e.target.value)}
@@ -145,13 +154,14 @@ export function TodayDashboard() {
             className="h-10 border-0 bg-muted/60 shadow-none focus-visible:ring-1"
           />
           <Button
+            type="submit"
             size="sm"
             disabled={!quickAdd.trim()}
             className="h-10 bg-[#14532d] hover:bg-[#052e16]"
           >
             ثبت کن
           </Button>
-        </div>
+        </form>
       </section>
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.85fr)]">
         <div className="space-y-6">

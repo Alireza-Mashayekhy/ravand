@@ -17,17 +17,19 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { projects } from '@/features/tasks/mocks';
+import { useProjects } from '@/features/projects/store';
+import type { Project } from '@/features/tasks/types';
 import { cn } from '@/lib/utils';
 
 const statusLabels = { active: 'در حال اجرا', 'on-hold': 'متوقف', completed: 'تمام‌شده' };
 export function ProjectsPage() {
+  const { projects } = useProjects();
   const [query, setQuery] = useState('');
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const filtered = useMemo(
     () =>
       projects.filter((p) => p.name.includes(query) || p.tags.some((tag) => tag.includes(query))),
-    [query],
+    [projects, query],
   );
   return (
     <div className="space-y-6">
@@ -99,7 +101,7 @@ export function ProjectsPage() {
     </div>
   );
 }
-function ProjectCard({ project, list }: { project: (typeof projects)[number]; list: boolean }) {
+function ProjectCard({ project, list }: { project: Project; list: boolean }) {
   return (
     <Link
       href={`/projects/${project.id}`}

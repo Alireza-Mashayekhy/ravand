@@ -1,10 +1,12 @@
 /**
- * کمک‌کارگرهای هندسهٔ تایم‌لاین (نمای روز/هفته).
+ * کمک‌کارگرهای هندسهٔ تایم‌لاین (نمای روز/هفتهٔ تقویم).
  *
- * زمان‌ها را همیشه به‌صورت «دقیقه از نیمه‌شب» (۰..۱۴۴۰) نگه می‌داریم؛ این کار
- * هم ریاضیِ کشیدن/تغییر‌اندازه را ساده می‌کند و هم برای لایهٔ API آینده مناسب
- * است. نمایش به‌صورت «۱۴:۰۰» است.
+ * تبدیل‌های Generic زمان (formatMinutes / minutesToTimeValue / timeValueToMinutes)
+ * به `@/lib/time` منتقل شده و اینجا re-export می‌شوند تا مصرف‌کنندگان فعلی تقویم
+ * بدون تغییر ادامه دهند.
  */
+
+export { formatMinutes, minutesToTimeValue, timeValueToMinutes } from '@/lib/time';
 
 /** ارتفاع هر ساعت به پیکسل (۶۰px ⇒ ۱ دقیقه = ۱ پیکسل). */
 export const HOUR_HEIGHT = 60;
@@ -14,34 +16,6 @@ export const SNAP_MINUTES = 15;
 export const MIN_DURATION = 15;
 /** ارتفاع منطقهٔ قابل‌اسکرول تایم‌لاین برای ۲۴ ساعت. */
 export const TIMELINE_HEIGHT = 24 * HOUR_HEIGHT;
-
-const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-
-function pad(n: number): string {
-  return String(n).padStart(2, '0');
-}
-
-/** دقیقه از نیمه‌شب → «۱۴:۰۰» (با ارقام فارسی). */
-export function formatMinutes(totalMinutes: number): string {
-  const clamped = Math.max(0, Math.min(24 * 60, Math.round(totalMinutes)));
-  const h = Math.floor(clamped / 60);
-  const m = clamped % 60;
-  const text = `${pad(h)}:${pad(m)}`;
-  return text.replace(/\d/g, (d) => PERSIAN_DIGITS[Number(d)] ?? d);
-}
-
-/** دقیقه از نیمه‌شب → «14:00» (لاتین، برای مقدار input[type=time]). */
-export function minutesToTimeValue(totalMinutes: number): string {
-  const clamped = Math.max(0, Math.min(24 * 60, Math.round(totalMinutes)));
-  return `${pad(Math.floor(clamped / 60))}:${pad(clamped % 60)}`;
-}
-
-/** «14:00» → دقیقه از نیمه‌شب. */
-export function timeValueToMinutes(value: string): number {
-  const [h = 0, m = 0] = value.split(':').map(Number);
-  if (Number.isNaN(h)) return 0;
-  return h * 60 + (Number.isNaN(m) ? 0 : m);
-}
 
 /** چسباندن یک دقیقه به نزدیک‌ترین مضرب SNAP_MINUTES. */
 export function snapMinutes(totalMinutes: number): number {

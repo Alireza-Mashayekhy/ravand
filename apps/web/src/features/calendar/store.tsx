@@ -6,6 +6,7 @@ import { projects as allProjects } from '@/features/tasks/mocks';
 import { useTaskStore } from '@/features/tasks/store';
 import type { Priority, Task, TaskStatus } from '@/features/tasks/types';
 
+import { useEvents } from './events-store';
 import {
   addDays,
   dateKey,
@@ -16,7 +17,6 @@ import {
   toJalali,
 } from './lib/jalali';
 import { formatMinutes, MIN_DURATION, snapMinutes } from './lib/timeline';
-import { seedEvents } from './mocks';
 import type {
   CalendarDialog,
   CalendarEvent,
@@ -175,7 +175,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 
   const [view, setView] = useState<CalendarView>('week');
   const [anchor, setAnchor] = useState<Date>(() => todayStart());
-  const [events, setEvents] = useState<CalendarEvent[]>(seedEvents);
+  const { events, addEvent, updateEvent, deleteEvent: removeEvent } = useEvents();
   const [filters, setFiltersState] = useState<CalendarFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<CalendarDialog>({ mode: 'closed' });
   const [dragging, setDragging] = useState<{ id: string; kind: CalendarItemKind } | null>(null);
@@ -348,29 +348,32 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     [addTask, projectName, todayKey],
   );
 
-  const createEvent = useCallback((input: NewEventInput) => {
-    const event: CalendarEvent = {
-      id: crypto.randomUUID(),
-      kind: 'event',
-      title: input.title.trim(),
-      date: input.date,
-      startTime: input.startTime,
-      endTime: input.endTime,
-      projectId: input.projectId,
-      note: input.note,
-    };
-    setEvents((current) => [...current, event]);
-    setDialog({ mode: 'closed' });
-    setMessage(`رویداد «${event.title}» اضافه شد.`);
-  }, []);
+  const createEvent = useCallback(
+    (input: NewEventInput) => {
+      const event: CalendarEvent = {
+        id: crypto.randomUUID(),
+        kind: 'event',
+        title: input.title.trim(),
+        date: input.date,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        projectId: input.projectId,
+        note: input.note,
+      };
+      addEvent(event);
+      setDialog({ mode: 'closed' });
+      setMessage(`رویداد «${event.title}» اضافه شد.`);
+    },
+    [addEvent],
+  );
 
-  const updateEvent = useCallback((id: string, patch: Partial<CalendarEvent>) => {
-    setEvents((current) => current.map((e) => (e.id === id ? { ...e, ...patch } : e)));
-  }, []);
-  const deleteEvent = useCallback((id: string) => {
-    setEvents((current) => current.filter((e) => e.id !== id));
-    setMessage('رویداد حذف شد.');
-  }, []);
+  const deleteEvent = useCallback(
+    (id: string) => {
+      removeEvent(id);
+      setMessage('رویداد حذف شد.');
+    },
+    [removeEvent],
+  );
 
   const moveItem = useCallback(
     (id: string, kind: CalendarItemKind, date: string, startTime: number) => {
