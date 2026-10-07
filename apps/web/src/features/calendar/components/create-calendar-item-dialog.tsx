@@ -424,7 +424,7 @@ function DialogShell({ children, onClose }: { children: React.ReactNode; onClose
   useEscape(onClose);
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-6 backdrop-blur-xs animate-in fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -433,7 +433,7 @@ function DialogShell({ children, onClose }: { children: React.ReactNode; onClose
         aria-modal="true"
         aria-label="تقویم"
         onClick={(e) => e.stopPropagation()}
-        className="bg-card w-full max-w-md overflow-hidden rounded-2xl border shadow-2xl"
+        className="bg-card w-full max-w-md overflow-hidden rounded-2xl border shadow-2xl animate-in zoom-in-95"
       >
         {children}
       </div>

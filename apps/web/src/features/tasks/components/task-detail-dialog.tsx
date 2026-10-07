@@ -1,7 +1,8 @@
 'use client';
 
 import { Calendar, Check, Circle, Flag, FolderKanban, Plus, Tag, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,15 @@ export function TaskDetailDialog({ task, onClose }: { task: Task; onClose: () =>
   const patch = (value: Partial<Task>) => updateTask(task.id, value);
   const current = useTaskStore().tasks.find((item) => item.id === task.id) ?? task;
   const completed = current.checklist.filter((item) => item.completed).length;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const addChecklist = () => {
     if (!newItem.trim()) return;
     patch({
@@ -30,14 +40,16 @@ export function TaskDetailDialog({ task, onClose }: { task: Task; onClose: () =>
     setNewItem('');
   };
   const remove = () => {
-    if (window.confirm('این کار حذف شود؟')) {
-      deleteTask(task.id);
-      onClose();
-    }
+    deleteTask(task.id);
+    toast.success('کار حذف شد');
+    onClose();
   };
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-6 backdrop-blur-xs animate-in fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="جزئیات کار"

@@ -1,11 +1,14 @@
 'use client';
 
 import {
+  Activity,
   Bell,
+  Bug,
   CalendarDays,
   CircleHelp,
   Clock3,
   FileText,
+  Flame,
   FolderKanban,
   Globe2,
   Inbox,
@@ -16,6 +19,7 @@ import {
   Menu,
   MoreHorizontal,
   Network,
+  Receipt,
   Search,
   Settings,
   Sparkles,
@@ -25,8 +29,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { GlobalSearchDialog } from '@/features/search/components/global-search-dialog';
+import { HeaderProjectBadge, ProjectSwitcher } from '@/features/projects/components/project-switcher';
 import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from './theme-toggle';
@@ -39,11 +45,15 @@ const PRIMARY_NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/websites', label: 'وب‌سایت‌ها', icon: Globe2 },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/seo', label: 'SEO', icon: Sparkles },
-  { href: '/clients', label: 'مشتری‌ها', icon: Users },
-  { href: '/time', label: 'زمان', icon: Clock3 },
+  { href: '/customers', label: 'مشتری‌ها', icon: Users },
+  { href: '/bugs', label: 'باگ‌ها', icon: Bug },
+  { href: '/time', label: 'زمان و تایمر', icon: Clock3 },
+  { href: '/focus', label: 'حالت تمرکز', icon: Flame },
   { href: '/notes', label: 'یادداشت‌ها', icon: FileText },
   { href: '/snippets', label: 'Snippets', icon: Network },
   { href: '/links', label: 'لینک‌ها', icon: Link2 },
+  { href: '/invoices', label: 'فاکتورها و مالی', icon: Receipt },
+  { href: '/activity', label: 'فعالیت', icon: Activity },
   { href: '/reports', label: 'گزارش‌ها', icon: Tag },
 ];
 
@@ -83,10 +93,29 @@ function NavLink({ item, onClick }: { item: (typeof PRIMARY_NAV)[number]; onClic
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname();
   const isToday = pathname === '/' || pathname === '/today';
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    const handleOpenSearch = () => setSearchOpen(true);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('ravand:open-search', handleOpenSearch);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('ravand:open-search', handleOpenSearch);
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-background">
+      <GlobalSearchDialog isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <aside
         className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col overflow-y-auto border-l border-[#1c5630] bg-sidebar lg:flex"
         aria-label="ناوبری اصلی"
@@ -107,7 +136,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
         aria-label="ناوبری موبایل"
       >
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4 pb-2">
           <Brand />
           <button
             onClick={() => setMobileOpen(false)}
@@ -118,6 +147,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <div className="overflow-y-auto px-3">
+          <div className="mb-2">
+            <ProjectSwitcher />
+          </div>
           <SidebarNav onClick={() => setMobileOpen(false)} />
         </div>
       </aside>
@@ -137,11 +169,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
               <span>فضای شخصی</span>
             </div>
-            <div className="h-4 w-px bg-border" />
+            <div className="hidden h-4 w-px bg-border sm:block" />
+            <HeaderProjectBadge />
             <span className="text-sm font-semibold lg:hidden">{isToday ? 'امروز من' : 'روند'}</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <button
+              onClick={() => setSearchOpen(true)}
               className="flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-xs text-muted-foreground shadow-sm transition-colors hover:border-primary/40 hover:text-foreground sm:w-52"
               aria-label="جستجو"
             >
@@ -200,14 +234,12 @@ function Brand() {
 function SidebarContent() {
   return (
     <>
-      <div className="p-5">
+      <div className="p-5 pb-2">
         <Brand />
       </div>
       <div className="px-3">
-        <div className="mb-5 rounded-lg border border-emerald-100/10 bg-white/5 px-3 py-2.5 text-xs text-emerald-100/70">
-          <span className="flex items-center gap-2">
-            <span className="size-1.5 rounded-full bg-[#22c55e]" /> فضای شخصی
-          </span>
+        <div className="mb-2">
+          <ProjectSwitcher />
         </div>
         <SidebarNav />
       </div>

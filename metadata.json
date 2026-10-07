@@ -1,0 +1,8 @@
+{
+  "name": "روند | Ravand",
+  "description": "سامانه یکپارچه مدیریت کارها، پروژه‌ها، تقویم شمسی، وب‌سایت‌ها، سئو، مشتریان و زمان",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

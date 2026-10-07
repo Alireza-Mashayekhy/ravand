@@ -26,7 +26,7 @@
     "@nestjs/platform-express": "^12.0.1",
     "@nestjs/swagger": "^12.0.2",
     "@nestjs/typeorm": "^12.0.2",
-    "@ravand/contracts": "workspace:*",
+    "@ravand/contracts": "*",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^18.0.5",
@@ -40,14 +40,14 @@
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
     "@nestjs/schematics": "^12.0.0",
-    "@ravand/eslint-config": "workspace:*",
-    "@ravand/tsconfig": "workspace:*",
+    "@ravand/eslint-config": "*",
+    "@ravand/tsconfig": "*",
     "@types/express": "^5.0.0",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "prettier": "catalog:",
+    "@types/node": "^22.18.0",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.9",
     "ts-node": "^10.9.2",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.71.0"
   }
 }

@@ -5,10 +5,13 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useActiveProject } from '@/features/projects/active-project-context';
+import { ProjectFilterBanner } from '@/features/projects/components/project-switcher';
 import { cn } from '@/lib/utils';
 
 import { PRIORITY_LABELS, STATUS_LABELS, useTaskStore } from '../store';
 import type { Priority, Task, TaskStatus } from '../types';
+import { CreateTaskDialog } from './create-task-dialog';
 import { TaskDetailDialog } from './task-detail-dialog';
 
 const columns: TaskStatus[] = ['idea', 'todo', 'in-progress', 'review', 'done'];
@@ -20,33 +23,64 @@ const priorityClass: Record<Priority, string> = {
 };
 export function TasksPage() {
   const { tasks } = useTaskStore();
+  const { activeProjectId, activeProject, isProjectFiltered } = useActiveProject();
   const [view, setView] = useState<'list' | 'kanban'>('list');
   const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selected, setSelected] = useState<Task | null>(null);
-  const filtered = useMemo(
-    () =>
-      tasks.filter(
-        (task) =>
-          task.title.includes(query) ||
-          task.project.includes(query) ||
-          task.tags.some((tag) => tag.includes(query)),
-      ),
-    [tasks, query],
-  );
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const filtered = useMemo(() => {
+    return tasks.filter((task) => {
+      // 1. Filter by Active Project if selected
+      if (isProjectFiltered) {
+        const matchesProject =
+          task.projectId === activeProjectId ||
+          (activeProject &&
+            task.project.toLowerCase().includes(activeProject.name.toLowerCase())) ||
+          (activeProjectId === 'monshim' &&
+            (task.projectId === 'monshim' ||
+              task.project.toLowerCase().includes('monshim') ||
+              task.project.includes('منشیم')));
+        if (!matchesProject) return false;
+      }
+
+      // 2. Filter by Status
+      if (statusFilter !== 'all' && task.status !== statusFilter) {
+        return false;
+      }
+
+      // 3. Filter by Query
+      if (!query.trim()) return true;
+      const q = query.trim().toLowerCase();
+      return (
+        task.title.toLowerCase().includes(q) ||
+        task.project.toLowerCase().includes(q) ||
+        task.tags.some((tag) => tag.toLowerCase().includes(q))
+      );
+    });
+  }, [tasks, query, isProjectFiltered, activeProjectId, activeProject, statusFilter]);
+
   return (
     <div className="space-y-6">
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="mb-2 text-sm text-muted-foreground">فضای کاری شخصی / مدیریت کارها</p>
-          <h1 className="text-2xl font-bold tracking-tight">وظایف</h1>
+          <h1 className="text-2xl font-bold tracking-tight">وظایف و کارها</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             از ایده تا انجام‌شدن، همه‌چیز را در یک نگاه کنترل کن.
           </p>
         </div>
-        <Button className="w-fit bg-[#14532d] hover:bg-[#052e16]">
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          className="w-fit bg-[#14532d] hover:bg-[#052e16] text-white"
+        >
           <Plus /> کار جدید
         </Button>
       </header>
+
+      <ProjectFilterBanner />
+
       <div className="bg-card flex flex-col gap-3 rounded-xl border p-3 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute top-2.5 right-3 size-4 text-muted-foreground" />
@@ -58,9 +92,18 @@ export function TasksPage() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            همه وضعیت‌ها <ChevronDown />
-          </Button>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-card h-9 rounded-md border px-3 text-xs font-medium"
+          >
+            <option value="all">همه وضعیت‌ها</option>
+            <option value="todo">انجام نشده (Todo)</option>
+            <option value="in-progress">در حال انجام (In Progress)</option>
+            <option value="review">بازبینی (Review)</option>
+            <option value="idea">ایده (Idea)</option>
+            <option value="done">انجام شده (Done)</option>
+          </select>
           <div className="flex rounded-lg border p-0.5">
             <button
               onClick={() => setView('list')}
@@ -89,6 +132,7 @@ export function TasksPage() {
         <KanbanView tasks={filtered} onSelect={setSelected} />
       )}
       {selected && <TaskDetailDialog task={selected} onClose={() => setSelected(null)} />}
+      <CreateTaskDialog isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </div>
   );
 }

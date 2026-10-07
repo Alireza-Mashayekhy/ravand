@@ -2,57 +2,37 @@
   "name": "ravand",
   "version": "0.1.0",
   "private": true,
-  "description": "Ravand — قالب پایهٔ مونوریپو (NestJS + Next.js + MySQL + TypeScript)",
+  "description": "Ravand — سامانه مدیریت کارها، پروژه‌ها و زمان (Next.js + NestJS + TypeScript)",
   "license": "UNLICENSED",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "turbo run build",
-    "check": "turbo run lint typecheck build",
+    "dev": "npm run dev --workspace=@ravand/web",
+    "build": "npm run build --workspace=@ravand/contracts && npm run build --workspace=@ravand/web",
+    "start": "npm run start --workspace=@ravand/web",
     "clean": "node ./scripts/clean.mjs .turbo .next dist apps/*/.next apps/*/dist packages/*/dist",
-    "db:down": "docker compose -f infra/docker-compose.yml down",
-    "db:logs": "docker compose -f infra/docker-compose.yml logs -f mysql",
-    "db:migration:create": "pnpm --filter @ravand/api db:migration:create",
-    "db:migration:generate": "pnpm --filter @ravand/api db:migration:generate",
-    "db:migration:revert": "pnpm --filter @ravand/api db:migration:revert",
-    "db:migration:run": "pnpm --filter @ravand/api db:migration:run",
-    "db:migration:show": "pnpm --filter @ravand/api db:migration:show",
-    "db:seed": "pnpm --filter @ravand/api db:seed",
-    "db:up": "docker compose -f infra/docker-compose.yml up -d",
-    "dev": "turbo run dev",
-    "dev:api": "pnpm --filter @ravand/api dev",
-    "dev:web": "pnpm --filter @ravand/web dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "prepare": "husky",
-    "reset": "pnpm clean && pnpm install",
-    "setup": "pnpm install && pnpm db:up && pnpm db:migration:run && pnpm db:seed",
-    "stack:down": "docker compose -f infra/docker-compose.yml --profile full down",
-    "stack:up": "docker compose -f infra/docker-compose.yml --profile full up -d --build",
-    "typecheck": "turbo run typecheck"
+    "lint": "npm run lint --workspace=@ravand/web",
+    "typecheck": "npm run typecheck --workspace=@ravand/contracts && npm run typecheck --workspace=@ravand/web"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "eslint-plugin-simple-import-sort": "catalog:",
-    "eslint-plugin-unused-imports": "catalog:",
+    "@eslint/js": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "prettier": "catalog:",
+    "prettier": "^3.9.9",
     "prettier-plugin-packagejson": "^3.0.2",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.7",
-    "typescript-eslint": "catalog:"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.71.0"
   },
-  "packageManager": "pnpm@10.29.3",
   "engines": {
-    "node": ">=22.12.0",
-    "pnpm": ">=10.0.0"
-  },
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "@scarf/scarf",
-      "unrs-resolver"
-    ]
+    "node": ">=20.0.0"
   }
 }

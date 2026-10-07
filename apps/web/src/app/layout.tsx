@@ -16,9 +16,13 @@ const vazirmatn = localFont({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'روند', template: '%s | روند' },
-  description: 'فضای کاری شخصی برای تمرکز و پیشرفت هر روزه',
+  title: { default: 'روند | Ravand', template: '%s | روند' },
+  description: 'سامانه یکپارچه مدیریت کارها، پروژه‌ها، تقویم شمسی، وب‌سایت‌ها، سئو، مشتریان و زمان',
   applicationName: 'روند',
+  openGraph: {
+    title: 'روند | Ravand',
+    description: 'سامانه یکپارچه مدیریت کارها، پروژه‌ها، تقویم شمسی، وب‌سایت‌ها، سئو، مشتریان و زمان',
+  },
   robots: { index: false, follow: false },
 };
 

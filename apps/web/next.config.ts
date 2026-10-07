@@ -8,27 +8,18 @@ const repoRoot = path.resolve(__dirname, '../..');
 
 loadEnvConfig(repoRoot);
 
-/**
- * آدرس ریشهٔ API — فقط سمت سرور استفاده می‌شود.
- *
- * در مرورگر هیچ درخواستی به این آدرس زده نمی‌شود؛ فرانت به `/api/v1/...`
- * روی همان دامنه درخواست می‌دهد و Next آن را به این مقصد پروکسی می‌کند.
- * مزیت‌ها: بدون دردسر CORS، بدون مشکل localhost در داکر/دامنه/موبایل.
- *
- * توجه: مقدار rewrite در زمان build داخل خروجی Next نوشته می‌شود، پس در
- * داکر باید هم به‌صورت build-arg و هم به‌صورت env در زمان اجرا ست شود.
- */
 const apiUrl = (process.env.API_URL ?? 'http://localhost:4444').replace(/\/+$/, '');
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // اجازهٔ HMR/منابع dev از دامنهٔ پیش‌نمایش Arena (فقط در حالت توسعه)
-  allowedDevOrigins: ['*.e2b.app', '3333-iqdlw3j4ptyd2lp9gh4pk.e2b.app'],
+  allowedDevOrigins: ['*.e2b.app', '3333-iqdlw3j4ptyd2lp9gh4pk.e2b.app', '*.run.app'],
 
   // خروجی مستقل برای ایمیج کوچک داکر (.next/standalone)
   output: 'standalone',
   outputFileTracingRoot: repoRoot,
+
+  transpilePackages: ['@ravand/contracts'],
 
   turbopack: {
     root: repoRoot,
@@ -37,8 +28,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${apiUrl}/api/:path*`,
+        source: '/api/v1/external/:path*',
+        destination: `${apiUrl}/api/v1/:path*`,
       },
     ];
   },

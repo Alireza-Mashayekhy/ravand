@@ -6,10 +6,20 @@ import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
 import { Toaster } from 'sonner';
 
+import { BugProvider } from '@/features/bugs/store';
 import { EventsProvider } from '@/features/calendar/events-store';
+import { CustomersProvider } from '@/features/customers/store';
 import { InboxProvider } from '@/features/inbox/store';
+import { InvoicesProvider } from '@/features/invoices/store';
+import { LinksProvider } from '@/features/links/store';
+import { NotesProvider } from '@/features/notes/store';
+import { ActiveProjectProvider } from '@/features/projects/active-project-context';
 import { ProjectsProvider } from '@/features/projects/store';
+import { SeoProvider } from '@/features/seo/store';
+import { SnippetsProvider } from '@/features/snippets/store';
 import { TaskProvider } from '@/features/tasks/store';
+import { TimeProvider } from '@/features/time/store';
+import { WebsitesProvider } from '@/features/websites/store';
 import { createQueryClient } from '@/lib/api/query-client';
 
 interface ProvidersProps {
@@ -17,7 +27,6 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
-  // یک QueryClient برای هر رندر سمت مرورگر (الگوی رسمی React Query در Next)
   const [queryClient] = useState(createQueryClient);
 
   return (
@@ -25,9 +34,29 @@ export function Providers({ children }: ProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <TaskProvider>
           <ProjectsProvider>
-            <EventsProvider>
-              <InboxProvider>{children}</InboxProvider>
-            </EventsProvider>
+            <ActiveProjectProvider>
+              <EventsProvider>
+                <InboxProvider>
+                  <WebsitesProvider>
+                    <SeoProvider>
+                      <BugProvider>
+                        <SnippetsProvider>
+                          <NotesProvider>
+                            <LinksProvider>
+                              <CustomersProvider>
+                                <InvoicesProvider>
+                                  <TimeProvider>{children}</TimeProvider>
+                                </InvoicesProvider>
+                              </CustomersProvider>
+                            </LinksProvider>
+                          </NotesProvider>
+                        </SnippetsProvider>
+                      </BugProvider>
+                    </SeoProvider>
+                  </WebsitesProvider>
+                </InboxProvider>
+              </EventsProvider>
+            </ActiveProjectProvider>
           </ProjectsProvider>
         </TaskProvider>
 
